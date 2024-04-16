@@ -61,8 +61,7 @@ var FilplusDeployContractCmd = &cli.Command{
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "from",
-			Usage:    "specify your address to send the message from",
-			Required: true,
+			Usage:    "optionally specify your address to send the message from",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
@@ -72,11 +71,19 @@ var FilplusDeployContractCmd = &cli.Command{
 			return lcli.IncorrectNumArgs(cctx)
 		}
 
-		froms := cctx.String("from")
-		if froms == "" {
-			return fmt.Errorf("must specify from address with --from")
+		api, closer, err := lcli.GetFullNodeAPI(cctx)
+		if err != nil {
+			return err
 		}
-		from, err := address.NewFromString(froms)
+		defer closer()
+		ctx := lcli.ReqContext(cctx)
+
+		var from address.Address
+		if froms := cctx.String("from"); froms == "" {
+			from, err = api.WalletDefaultAddress(ctx)
+		} else {
+			from, err = address.NewFromString(froms)
+		}
 		if err != nil {
 			return err
 		}
@@ -96,13 +103,7 @@ var FilplusDeployContractCmd = &cli.Command{
 			return err
 		}
 
-		api, closer, err := lcli.GetFullNodeAPI(cctx)
-		if err != nil {
-			return err
-		}
-		defer closer()
 
-		ctx := lcli.ReqContext(cctx)
 		deploy := ethabi.MustParseMethod("deploy(address)");
 		calldata := deploy.MustEncodeArgs(initialContractOwner);
 		if err != nil {
@@ -280,8 +281,7 @@ var FilplusAddAllowanceCmd = &cli.Command{
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "from",
-			Usage:    "specify your address to send the message from",
-			Required: true,
+			Usage:    "optionally specify your address to send the message from",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
@@ -291,11 +291,19 @@ var FilplusAddAllowanceCmd = &cli.Command{
 			return lcli.IncorrectNumArgs(cctx)
 		}
 
-		froms := cctx.String("from")
-		if froms == "" {
-			return fmt.Errorf("must specify from address with --from")
+		api, closer, err := lcli.GetFullNodeAPI(cctx)
+		if err != nil {
+			return err
 		}
-		from, err := address.NewFromString(froms)
+		defer closer()
+		ctx := lcli.ReqContext(cctx)
+
+		var from address.Address
+		if froms := cctx.String("from"); froms == "" {
+			from, err = api.WalletDefaultAddress(ctx)
+		} else {
+			from, err = address.NewFromString(froms)
+		}
 		if err != nil {
 			return err
 		}
@@ -320,13 +328,6 @@ var FilplusAddAllowanceCmd = &cli.Command{
 			return err
 		}
 
-		api, closer, err := lcli.GetFullNodeAPI(cctx)
-		if err != nil {
-			return err
-		}
-		defer closer()
-
-		ctx := lcli.ReqContext(cctx)
 		addAllowance := ethabi.MustParseMethod("addAllowance(address,uint256)");
 		calldata := addAllowance.MustEncodeArgs(allocatorAddress, amount);
 		if err != nil {
@@ -374,8 +375,7 @@ var FilplusSetAllowanceCmd = &cli.Command{
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "from",
-			Usage:    "specify your address to send the message from",
-			Required: true,
+			Usage:    "optionally specify your address to send the message from",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
@@ -385,11 +385,19 @@ var FilplusSetAllowanceCmd = &cli.Command{
 			return lcli.IncorrectNumArgs(cctx)
 		}
 
-		froms := cctx.String("from")
-		if froms == "" {
-			return fmt.Errorf("must specify from address with --from")
+		api, closer, err := lcli.GetFullNodeAPI(cctx)
+		if err != nil {
+			return err
 		}
-		from, err := address.NewFromString(froms)
+		defer closer()
+		ctx := lcli.ReqContext(cctx)
+
+		var from address.Address
+		if froms := cctx.String("from"); froms == "" {
+			from, err = api.WalletDefaultAddress(ctx)
+		} else {
+			from, err = address.NewFromString(froms)
+		}
 		if err != nil {
 			return err
 		}
@@ -414,13 +422,6 @@ var FilplusSetAllowanceCmd = &cli.Command{
 			return err
 		}
 
-		api, closer, err := lcli.GetFullNodeAPI(cctx)
-		if err != nil {
-			return err
-		}
-		defer closer()
-
-		ctx := lcli.ReqContext(cctx)
 		setAllowance := ethabi.MustParseMethod("setAllowance(address,uint256)");
 		calldata := setAllowance.MustEncodeArgs(allocatorAddress, amount);
 		if err != nil {
@@ -468,8 +469,7 @@ var FilplusAddVerifiedClientCmd = &cli.Command{
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:     "from",
-			Usage:    "specify your address to send the message from",
-			Required: true,
+			Usage:    "optionally specify your address to send the message from",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
@@ -479,11 +479,19 @@ var FilplusAddVerifiedClientCmd = &cli.Command{
 			return lcli.IncorrectNumArgs(cctx)
 		}
 
-		froms := cctx.String("from")
-		if froms == "" {
-			return fmt.Errorf("must specify from address with --from")
+		api, closer, err := lcli.GetFullNodeAPI(cctx)
+		if err != nil {
+			return err
 		}
-		from, err := address.NewFromString(froms)
+		defer closer()
+		ctx := lcli.ReqContext(cctx)
+
+		var from address.Address
+		if froms := cctx.String("from"); froms == "" {
+			from, err = api.WalletDefaultAddress(ctx)
+		} else {
+			from, err = address.NewFromString(froms)
+		}
 		if err != nil {
 			return err
 		}
@@ -508,13 +516,6 @@ var FilplusAddVerifiedClientCmd = &cli.Command{
 			return err
 		}
 
-		api, closer, err := lcli.GetFullNodeAPI(cctx)
-		if err != nil {
-			return err
-		}
-		defer closer()
-
-		ctx := lcli.ReqContext(cctx)
 		addVerifiedClient := ethabi.MustParseMethod("addVerifiedClient(address,uint256)");
 		calldata := addVerifiedClient.MustEncodeArgs(clientAddress, amount);
 		if err != nil {
