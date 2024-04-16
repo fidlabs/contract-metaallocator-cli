@@ -103,7 +103,6 @@ var FilplusDeployContractCmd = &cli.Command{
 			return err
 		}
 
-
 		deploy := ethabi.MustParseMethod("deploy(address)");
 		calldata := deploy.MustEncodeArgs(initialContractOwner);
 		if err != nil {
@@ -122,7 +121,6 @@ var FilplusDeployContractCmd = &cli.Command{
 			Method: builtintypes.MethodsEVM.InvokeContract,
 			Params: calldata,
 		}
-    // event Deployed(address deployedContractAddress);
 
 		afmt.Println("sending message...")
 		smsg, err := api.MpoolPushMessage(ctx, msg, nil)
@@ -140,6 +138,7 @@ var FilplusDeployContractCmd = &cli.Command{
 		}
 
 		if eventsRoot := wait.Receipt.EventsRoot; eventsRoot != nil {
+			// FIXME filter out deployed event
 			afmt.Println("Events emitted:")
 
 			s := &apiIpldStore{ctx, api}
