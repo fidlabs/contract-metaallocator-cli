@@ -58,6 +58,7 @@ func main() {
 		},
 
 		Commands: []*cli.Command{
+			FilplusDeployContractCmd,
 			FilplusListContractsCmd,
 			FilplusListAllocatorsCmd,
 			FilplusAddAllowanceCmd,
