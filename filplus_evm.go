@@ -504,7 +504,7 @@ var FilplusAddVerifiedClientCmd = &cli.Command{
 			return err
 		}
 
-		clientAddress, err := ethtypes.ParseEthAddress(cctx.Args().Get(1))
+		clientAddress, err := address.NewFromString(cctx.Args().Get(1))
 		if err != nil {
 			return err
 		}
@@ -515,8 +515,8 @@ var FilplusAddVerifiedClientCmd = &cli.Command{
 			return err
 		}
 
-		addVerifiedClient := ethabi.MustParseMethod("addVerifiedClient(address,uint256)");
-		calldata := addVerifiedClient.MustEncodeArgs(clientAddress, amount);
+		addVerifiedClient := ethabi.MustParseMethod("addVerifiedClient(bytes,uint256)");
+		calldata := addVerifiedClient.MustEncodeArgs(clientAddress.Bytes(), amount);
 		if err != nil {
 			return err
 		}
