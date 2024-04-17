@@ -22,4 +22,4 @@ go.work
 
 .filecoin-install
 .update-modules
-contract-allocator-cli
+contract-metaallocator-cli

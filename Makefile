@@ -65,29 +65,29 @@ CLEAN+=.update-modules
 deps: $(BUILD_DEPS)
 .PHONY: deps
 
-contract-allocator-cli: $(BUILD_DEPS)
-	rm -f contract-allocator-cli
+contract-metaallocator-cli: $(BUILD_DEPS)
+	rm -f contract-metaallocator-cli
 	$(GOCC) build $(GOFLAGS)
 
-.PHONY: contract-allocator-cli
-BINS+=contract-allocator-cli
+.PHONY: contract-metaallocator-cli
+BINS+=contract-metaallocator-cli
 
-build: contract-allocator-cli
-	@[[ $$(type -P "contract-allocator-cli") ]] && echo "Caution: you have \
+build: contract-metaallocator-cli
+	@[[ $$(type -P "contract-metaallocator-cli") ]] && echo "Caution: you have \
 an existing lotus binary in your PATH. This may cause problems if you don't run 'sudo make install'" || true
 
 .PHONY: build
 
-install: install-contract-allocator-cli
+install: install-contract-metaallocator-cli
 
-install-contract-allocator-cli:
-	install -C ./contract-allocator-cli /usr/local/bin/contract-allocator-cli
+install-contract-metaallocator-cli:
+	install -C ./contract-metaallocator-cli /usr/local/bin/contract-metaallocator-cli
 
-uninstall: uninstall-contract-allocator-cli
+uninstall: uninstall-contract-metaallocator-cli
 .PHONY: uninstall
 
-uninstall-contract-allocator-cli:
-	rm -f /usr/local/bin/contract-allocator-cli
+uninstall-contract-metaallocator-cli:
+	rm -f /usr/local/bin/contract-metaallocator-cli
 
 buildall: $(BINS)
 

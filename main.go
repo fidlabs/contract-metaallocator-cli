@@ -22,7 +22,7 @@ func main() {
 	lotuslog.SetupLogLevels()
 	api.RunningNodeType = api.NodeFull
 
-	jaeger := tracing.SetupJaegerTracing("contract-allocator-cli")
+	jaeger := tracing.SetupJaegerTracing("contract-metaallocator-cli")
 	defer func() {
 		if jaeger != nil {
 			_ = jaeger.ForceFlush(context.Background())
@@ -33,7 +33,7 @@ func main() {
 	defer span.End()
 
 	app := &cli.App{
-		Name:                 "contract-allocator-cli",
+		Name:                 "contract-metaallocator-cli",
 		Usage:                "Filecoin Smart Contract Allocator client",
 		Version:              build.UserVersion(),
 		EnableBashCompletion: true,

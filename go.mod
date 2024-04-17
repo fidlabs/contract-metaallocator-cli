@@ -1,4 +1,4 @@
-module github.com/fidlabs/contract-allocator-cli
+module github.com/fidlabs/contract-metaallocator-cli
 
 go 1.22.1
 
