@@ -13,6 +13,8 @@ make && make install
 contract-metaallocator-cli --help
 ```
 
+It's working as an addition to standard `lotus` command, so to use it you need Lotus Daemon running locally. Use `LOTUS_PATH` env var if you have your Lotus initialzed in non-standard location.
+
 ## Commands
 
 ### `deploy-allocator-contract`

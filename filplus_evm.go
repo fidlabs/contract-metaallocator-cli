@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -52,7 +54,7 @@ func (ht *apiIpldStore) Put(ctx context.Context, v interface{}) (cid.Cid, error)
 	panic("No mutations allowed")
 }
 
-var EmptyEthAddress  = ethtypes.EthAddress{}
+var EmptyEthAddress = ethtypes.EthAddress{}
 
 var FilplusDeployContractCmd = &cli.Command{
 	Name:      "deploy-allocator-contract",
@@ -60,8 +62,8 @@ var FilplusDeployContractCmd = &cli.Command{
 	ArgsUsage: "registryAddress initialContractOwner",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:     "from",
-			Usage:    "optionally specify your address to send the message from",
+			Name:  "from",
+			Usage: "optionally specify your address to send the message from",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
@@ -103,8 +105,8 @@ var FilplusDeployContractCmd = &cli.Command{
 			return err
 		}
 
-		deploy := ethabi.MustParseMethod("deploy(address)");
-		calldata := deploy.MustEncodeArgs(initialContractOwner);
+		deploy := ethabi.MustParseMethod("deploy(address)")
+		calldata := deploy.MustEncodeArgs(initialContractOwner)
 		if err != nil {
 			return err
 		}
@@ -138,38 +140,39 @@ var FilplusDeployContractCmd = &cli.Command{
 		}
 
 		if eventsRoot := wait.Receipt.EventsRoot; eventsRoot != nil {
-			// FIXME filter out deployed event
-			afmt.Println("Events emitted:")
-
 			s := &apiIpldStore{ctx, api}
 			amt, err := amt4.LoadAMT(ctx, s, *eventsRoot, amt4.UseTreeBitWidth(types.EventAMTBitwidth))
 			if err != nil {
 				return err
 			}
 
+			deployed := false
 			var evt types.Event
 			err = amt.ForEach(ctx, func(u uint64, deferred *cbg.Deferred) error {
-				fmt.Printf("%x\n", deferred.Raw)
 				if err := evt.UnmarshalCBOR(bytes.NewReader(deferred.Raw)); err != nil {
 					return err
 				}
-				if err != nil {
-					return err
-				}
-				fmt.Printf("\tEmitter ID: %s\n", evt.Emitter)
-				for _, e := range evt.Entries {
-					value, err := cbg.ReadByteArray(bytes.NewBuffer(e.Value), uint64(len(e.Value)))
+				if len(evt.Entries) == 2 {
+					deployedTopic, err := hex.DecodeString("f40fcec21964ffb566044d083b4073f29f7f7929110ea19e1b3ebe375d89055e") // topic0 of event Deployed(address)
 					if err != nil {
 						return err
 					}
-					fmt.Printf("\t\tKey: %s, Value: 0x%x, Flags: b%b\n", e.Key, value, e.Flags)
+					if bytes.Compare(evt.Entries[0].Value, deployedTopic) == 0 {
+						addr := evt.Entries[1].Value[12:]
+						fmt.Printf("Deployed to address: 0x%x\n", addr)
+						deployed = true
+						return nil
+					}
 				}
 				return nil
-
 			})
+			if err != nil {
+				return err
+			}
+			if !deployed {
+				return errors.New("Contract not deployed")
+			}
 		}
-
-		afmt.Println("OK")
 
 		return nil
 	},
@@ -189,7 +192,7 @@ var FilplusListContractsCmd = &cli.Command{
 			return err
 		}
 
-		contracts := ethabi.MustParseMethod("contracts() returns (address[])");
+		contracts := ethabi.MustParseMethod("contracts() returns (address[])")
 
 		api, closer, err := lcli.GetFullNodeAPIV1(cctx)
 		if err != nil {
@@ -208,8 +211,8 @@ var FilplusListContractsCmd = &cli.Command{
 			return err
 		}
 
-		var addresses []goethtypes.Address;
-		contracts.MustDecodeValues(res, &addresses);
+		var addresses []goethtypes.Address
+		contracts.MustDecodeValues(res, &addresses)
 
 		fmt.Println(addresses)
 		return nil
@@ -231,8 +234,8 @@ var FilplusListAllocatorsCmd = &cli.Command{
 			return err
 		}
 
-		allocators := ethabi.MustParseMethod("allocators() returns (address[])");
-		allowance := ethabi.MustParseMethod("allowance(address) returns (uint256)");
+		allocators := ethabi.MustParseMethod("allocators() returns (address[])")
+		allowance := ethabi.MustParseMethod("allowance(address) returns (uint256)")
 
 		api, closer, err := lcli.GetFullNodeAPIV1(cctx)
 		if err != nil {
@@ -251,10 +254,10 @@ var FilplusListAllocatorsCmd = &cli.Command{
 			return err
 		}
 
-		var addresses []goethtypes.Address;
-		allocators.MustDecodeValues(res, &addresses);
+		var addresses []goethtypes.Address
+		allocators.MustDecodeValues(res, &addresses)
 
-		for i := 0; i < len(addresses); i++ { 
+		for i := 0; i < len(addresses); i++ {
 			address := addresses[i]
 			res, err := api.EthCall(ctx, ethtypes.EthCall{
 				From: &EmptyEthAddress,
@@ -265,10 +268,10 @@ var FilplusListAllocatorsCmd = &cli.Command{
 				fmt.Println("Eth call fails, return val: ", res)
 				return err
 			}
-			var allowanceAmount *big.Int;
-			allowance.MustDecodeValues(res, &allowanceAmount);
-			fmt.Println(address, allowanceAmount);
-		} 
+			var allowanceAmount *big.Int
+			allowance.MustDecodeValues(res, &allowanceAmount)
+			fmt.Println(address, allowanceAmount)
+		}
 		return nil
 	},
 }
@@ -279,8 +282,8 @@ var FilplusAddAllowanceCmd = &cli.Command{
 	ArgsUsage: "allocatorContractAddress allocatorAddress amount",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:     "from",
-			Usage:    "optionally specify your address to send the message from",
+			Name:  "from",
+			Usage: "optionally specify your address to send the message from",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
@@ -327,8 +330,8 @@ var FilplusAddAllowanceCmd = &cli.Command{
 			return err
 		}
 
-		addAllowance := ethabi.MustParseMethod("addAllowance(address,uint256)");
-		calldata := addAllowance.MustEncodeArgs(allocatorAddress, amount);
+		addAllowance := ethabi.MustParseMethod("addAllowance(address,uint256)")
+		calldata := addAllowance.MustEncodeArgs(allocatorAddress, amount)
 		if err != nil {
 			return err
 		}
@@ -373,8 +376,8 @@ var FilplusSetAllowanceCmd = &cli.Command{
 	ArgsUsage: "allocatorContractAddress allocatorAddress amount",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:     "from",
-			Usage:    "optionally specify your address to send the message from",
+			Name:  "from",
+			Usage: "optionally specify your address to send the message from",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
@@ -421,8 +424,8 @@ var FilplusSetAllowanceCmd = &cli.Command{
 			return err
 		}
 
-		setAllowance := ethabi.MustParseMethod("setAllowance(address,uint256)");
-		calldata := setAllowance.MustEncodeArgs(allocatorAddress, amount);
+		setAllowance := ethabi.MustParseMethod("setAllowance(address,uint256)")
+		calldata := setAllowance.MustEncodeArgs(allocatorAddress, amount)
 		if err != nil {
 			return err
 		}
@@ -467,8 +470,8 @@ var FilplusAddVerifiedClientCmd = &cli.Command{
 	ArgsUsage: "allocatorContractAddress clientAddress amount",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
-			Name:     "from",
-			Usage:    "optionally specify your address to send the message from",
+			Name:  "from",
+			Usage: "optionally specify your address to send the message from",
 		},
 	},
 	Action: func(cctx *cli.Context) error {
@@ -515,8 +518,8 @@ var FilplusAddVerifiedClientCmd = &cli.Command{
 			return err
 		}
 
-		addVerifiedClient := ethabi.MustParseMethod("addVerifiedClient(bytes,uint256)");
-		calldata := addVerifiedClient.MustEncodeArgs(clientAddress.Bytes(), amount);
+		addVerifiedClient := ethabi.MustParseMethod("addVerifiedClient(bytes,uint256)")
+		calldata := addVerifiedClient.MustEncodeArgs(clientAddress.Bytes(), amount)
 		if err != nil {
 			return err
 		}
