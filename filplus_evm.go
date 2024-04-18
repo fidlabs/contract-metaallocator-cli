@@ -234,7 +234,7 @@ var FilplusListAllocatorsCmd = &cli.Command{
 			return err
 		}
 
-		allocators := ethabi.MustParseMethod("allocators() returns (address[])")
+		allocators := ethabi.MustParseMethod("getAllocators() returns (address[])")
 		allowance := ethabi.MustParseMethod("allowance(address) returns (uint256)")
 
 		api, closer, err := lcli.GetFullNodeAPIV1(cctx)
