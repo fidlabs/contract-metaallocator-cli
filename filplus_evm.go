@@ -192,7 +192,7 @@ var FilplusListContractsCmd = &cli.Command{
 			return err
 		}
 
-		contracts := ethabi.MustParseMethod("contracts() returns (address[])")
+		contracts := ethabi.MustParseMethod("getContracts() returns (address[])")
 
 		api, closer, err := lcli.GetFullNodeAPIV1(cctx)
 		if err != nil {
